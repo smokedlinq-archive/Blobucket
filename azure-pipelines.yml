@@ -43,4 +43,4 @@ steps:
     packagesToPush: '**/*.nupkg;!**/*.symbols.nupkg'
     nuGetFeedType: external
     publishFeedCredentials: 'nuget.org_blobucket'
-    arguments: -SkipDuplicate
+    allowPackageConflicts: true
