@@ -8,7 +8,7 @@ pool:
 
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  BUILD_VERSION: 0.0.1
+  BUILD_VERSION: 0.0.2
 
 steps:
 - task: NuGetToolInstaller@1
