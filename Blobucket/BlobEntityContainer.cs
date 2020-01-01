@@ -16,14 +16,24 @@ namespace Blobucket
 
         public BlobEntityContainer(BlobServiceClient blobService, BlobEntityContainerOptions<T> options)
         {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _containerClient = (blobService ?? throw new ArgumentNullException(nameof(blobService))).GetBlobContainerClient(options.ContainerName);
-            _defaultFormatter = (options ?? throw new ArgumentNullException(nameof(options))).Formatter;
+            _defaultFormatter = options.Formatter;
         }
 
         public BlobEntityContainer(BlobContainerClient client, BlobEntityContainerOptions<T> options)
         {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _containerClient = client ?? throw new ArgumentNullException(nameof(client));
-            _defaultFormatter = (options ?? throw new ArgumentNullException(nameof(options))).Formatter;
+            _defaultFormatter = options.Formatter;
         }
 
         public string Name => _containerClient.Name;
@@ -61,10 +71,10 @@ namespace Blobucket
             var formatter = options?.Formatter ?? _defaultFormatter;
             var client = _containerClient.GetBlobClient(id);
             using var stream = await formatter.SerializeAsync(entity, cancellationToken).ConfigureAwait(false);
-            await client.UploadAsync(stream, overwrite: overwrite, cancellationToken);
+            await client.UploadAsync(stream, overwrite: overwrite, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task DeleteAsync(string id, BlobEntityOptions? options = null, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
             => _containerClient.GetBlobClient(id).DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 }

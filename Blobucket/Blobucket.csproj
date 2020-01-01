@@ -6,6 +6,33 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.1.0.13383">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(BUILD_VERSION)' == ''">
+    <BUILD_VERSION>0.0.0</BUILD_VERSION>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DebugType>full</DebugType>
+    <VersionPrefix>$(BUILD_VERSION)</VersionPrefix>
+    <FileVersion>$(BUILD_VERSION)</FileVersion>
+    <AssemblyVersion>$(BUILD_VERSION)</AssemblyVersion>
+    <Authors>https://github.com/smokedlinq/Blobucket</Authors>
+    <Company>https://github.com/smokedlinq/Blobucket</Company>
+    <Description>Blobucket makes working with Azure Storage blobs as entities / objects easier for simple scenarios.</Description>
+    <PackageProjectUrl>https://github.com/smokedlinq/Blobucket</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/smokedlinq/Blobucket.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
 </Project>
