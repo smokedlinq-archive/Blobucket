@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Blobucket;
 
-namespace Blobucket
+namespace Blobucketeer
 {
     public class Program
     {
         public static async Task Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                            .AddUserSecrets<Program>()
-                            .AddEnvironmentVariables()
-                            .AddCommandLine(args)
-                            .Build();
-
-            var context = new BlobServiceContext(new BlobServiceContextOptions { ConnectionString = config.GetConnectionString("Default") });
-            var people = await context.CreateContainerForAsync<Person>(config => config.UseContainerName("people"));
+            var factory = new BlobEntityContainerFactory(new BlobEntityContainerFactoryOptions { ConnectionString = @"UseDevelopmentStorage=true;" });
+            var people = await factory.CreateContainerForAsync<Person>(config => config.UseContainerName("people"));
 
             await people.SetAsync("outlook.com/smokedlinq", new Person
                         {
@@ -34,8 +28,8 @@ namespace Blobucket
 
     public class Person
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string EmailAddress { get; set; } = string.Empty;
     }
 }

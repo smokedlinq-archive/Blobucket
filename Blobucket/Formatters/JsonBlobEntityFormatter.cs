@@ -19,9 +19,13 @@ namespace Blobucket.Formatters
             {
                 return await JsonSerializer.DeserializeAsync<T>(stream, options: _options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new BlobEntityFormatException(ex.Message, ex);
+                throw new BlobEntityFormatterException(ex.Message, ex);
             }
         }
 
@@ -34,9 +38,13 @@ namespace Blobucket.Formatters
                 stream.Position = 0;
                 return stream;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new BlobEntityFormatException(ex.Message, ex);
+                throw new BlobEntityFormatterException(ex.Message, ex);
             }
         }
     }

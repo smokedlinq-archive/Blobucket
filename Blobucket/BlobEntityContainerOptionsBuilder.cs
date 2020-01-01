@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Blobucket.Formatters;
 
 namespace Blobucket
@@ -18,8 +17,7 @@ namespace Blobucket
         public BlobEntityContainerOptionsBuilder<T> UseContainerName(string containerName)
             => Add(x => x.ContainerName = containerName);
 
-        public BlobEntityContainerOptionsBuilder<T> UseFormatter<TFormatter>(TFormatter formatter)
-            where TFormatter : BlobEntityFormatter, new()
+        public BlobEntityContainerOptionsBuilder<T> UseFormatter(BlobEntityFormatter formatter)
             => Add(x => x.Formatter = formatter);
 
         public BlobEntityContainerOptions<T> Build()

@@ -1,6 +1,6 @@
 namespace Blobucket
 {
-    public class BlobServiceContextOptions
+    public class BlobEntityContainerFactoryOptions
     {
         public string ConnectionString { get; set; } = string.Empty;
     }
