@@ -1,28 +1,56 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 using Blobucket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Blobucketeer
 {
-    public class Program
+    public static class Program
     {
         public static async Task Main(string[] args)
         {
-            var factory = new BlobEntityContainerFactory(new BlobEntityContainerFactoryOptions { ConnectionString = @"UseDevelopmentStorage=true;" });
-            var people = await factory.CreateContainerForAsync<Person>(config => config.UseContainerName("people"));
+            var config = new ConfigurationBuilder()
+                            .AddCommandLine(args)
+                            .Build();
 
+            var services = new ServiceCollection()
+                            .AddBlobEntityContainerFactory(c => c.ConnectionString = config.GetConnectionString("Default") ?? "UseDevelopmentStorage=true;")
+                            .AddBlobEntityContainer<Person>(c => c.UseContainerName("people"))
+                            .BuildServiceProvider();
+            
+            var people = services.GetRequiredService<BlobEntityContainer<Person>>();
+
+            // Create/update the blob
+            await people.SetAsync("outlook.com/smokedlinq", new Person
+                        {
+                            FirstName = "First",
+                            LastName = "Last",
+                            EmailAddress = "smokedlinq@outlook.com"
+                        }).ConfigureAwait(false);
+
+            // Display the blob
+            var me = await people.GetAsync("outlook.com/smokedlinq").ConfigureAwait(false);
+            await Console.Out.WriteLineAsync($"{me.FirstName} {me.LastName}<{me.EmailAddress}>").ConfigureAwait(false);
+
+            // Create a snapshot before updating
+            await people.CreateSnapshotAsync("outlook.com/smokedlinq").ConfigureAwait(false);
+
+            // Update the blob
             await people.SetAsync("outlook.com/smokedlinq", new Person
                         {
                             FirstName = "Adam",
                             LastName = "Weigert",
                             EmailAddress = "smokedlinq@outlook.com"
-                        });
+                        }).ConfigureAwait(false);
 
-            var me = await people.GetAsync("outlook.com/smokedlinq");
+            // Display the updated blob
+            me = await people.GetAsync("outlook.com/smokedlinq").ConfigureAwait(false);
+            await Console.Out.WriteLineAsync($"{me.FirstName} {me.LastName}<{me.EmailAddress}>").ConfigureAwait(false);
 
-            await Console.Out.WriteLineAsync($"{me.FirstName} {me.LastName}<{me.EmailAddress}>");
-
-            await people.DeleteAsync("outlook.com/smokedlinq");
+            // Delete the blob and all snapshots
+            await people.DeleteAsync("outlook.com/smokedlinq", DeleteSnapshotsOption.IncludeSnapshots).ConfigureAwait(false);
         }
     }
 

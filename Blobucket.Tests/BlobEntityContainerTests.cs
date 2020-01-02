@@ -59,6 +59,17 @@ namespace Blobucket
         }
 
         [Fact]
+        public async Task BlobFormatterCanBeDifferentPerEntity()
+        {
+            var mockBlob = new Mock<BlobClient>();
+            var mockContainer = new Mock<BlobContainerClient>();
+            mockContainer.Setup(x => x.GetBlobClient(It.IsAny<string>())).Returns(mockBlob.Object);
+            
+            var container = new BlobEntityContainer<string>(mockContainer.Object, new BlobEntityContainerOptions<string>());
+            await container.Invoking(async x => await x.SetAsync("id", "data")).Should().NotThrowAsync();
+        }
+
+        [Fact]
         public async Task DeleteDoesNotThrow()
         {
             var mockBlob = new Mock<BlobClient>();                
@@ -67,6 +78,17 @@ namespace Blobucket
             
             var container = new BlobEntityContainer<string>(mockContainer.Object, new BlobEntityContainerOptions<string>());
             await container.Invoking(async x => await x.DeleteAsync("id")).Should().NotThrowAsync();
+        }
+
+        [Fact]
+        public async Task CreateSnapshotDoesNotThrow()
+        {
+            var mockBlob = new Mock<BlobClient>();                
+            var mockContainer = new Mock<BlobContainerClient>();
+            mockContainer.Setup(x => x.GetBlobClient(It.IsAny<string>())).Returns(mockBlob.Object);
+            
+            var container = new BlobEntityContainer<string>(mockContainer.Object, new BlobEntityContainerOptions<string>());
+            await container.Invoking(async x => await x.CreateSnapshotAsync("id")).Should().NotThrowAsync();
         }
     }
 }

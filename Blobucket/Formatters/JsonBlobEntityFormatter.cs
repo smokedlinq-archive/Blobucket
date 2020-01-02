@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace Blobucket.Formatters
         public JsonBlobEntityFormatter(JsonSerializerOptions? options = default)
             => _options = options;
 
-        public override async Task<T> DeserializeAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+        public override async Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -29,7 +30,7 @@ namespace Blobucket.Formatters
             }
         }
 
-        public override async Task<Stream> SerializeAsync<T>(T entity, CancellationToken cancellationToken = default)
+        public override async Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
         {
             try
             {
