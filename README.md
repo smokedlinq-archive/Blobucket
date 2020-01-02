@@ -71,7 +71,7 @@ await container.GetAsync("id", options);
 
 Fire up the Azure Storage Emulator and create a new console project, replace the `Program.cs` file with below.
 
->A more advanced, end-to-end, sample can be found in the [Sample](Samples) folder.
+>A more advanced, end-to-end, sample can be found in the [Sample](Sample) folder.
 
 ```csharp
 using System;

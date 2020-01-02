@@ -15,11 +15,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new BlobEntityContainerFactory(options, serviceClient);
             });
 
-        public static IServiceCollection AddBlobEntityContainer<T>(this IServiceCollection services, Action<BlobEntityContainerOptionsBuilder<T>>? configure = null, PublicAccessType publicAccessType = PublicAccessType.None)
+        public static IServiceCollection AddBlobEntityContainer<T>(this IServiceCollection services, Action<BlobEntityContainerOptionsBuilder<T>>? configure = null, PublicAccessType publicAccessType = PublicAccessType.None, bool createIfNotExists = true)
             => services.AddSingleton<BlobEntityContainer<T>>(provider =>
                 {
                     var container = provider.GetRequiredService<BlobEntityContainerFactory>().GetContainerFor<T>(configure);
-                    container.CreateIfNotExists(publicAccessType);
+                    if (createIfNotExists)
+                    {
+                        container.CreateIfNotExists(publicAccessType);
+                    }
                     return container;
                 });
     }

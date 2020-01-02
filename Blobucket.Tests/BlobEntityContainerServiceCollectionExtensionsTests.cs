@@ -11,7 +11,7 @@ namespace Blobucket
         {
             var services = new ServiceCollection()
                             .AddBlobEntityContainerFactory(c => c.ConnectionString = "UseDevelopmentStorage=true;")
-                            .AddBlobEntityContainer<string>(c => c.UseContainerName("people"))
+                            .AddBlobEntityContainer<string>(c => c.UseContainerName("people"), createIfNotExists: false)
                             .BuildServiceProvider();
             
             services.Invoking(x => services.GetRequiredService<BlobEntityContainer<string>>().Should().NotBeNull()).Should().NotThrow();
