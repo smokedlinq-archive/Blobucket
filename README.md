@@ -10,68 +10,77 @@ The library is based on .NET Standard 2.1 and the Azure Storage v12 SDK. It enab
 
 ## Getting Started
 
-Add the package from the good ole nugets, e.g. using dotnet cli:
+Add the packages from the good ole nugets, e.g. using dotnet cli:
 
-```dotnet
+```batch
 dotnet add package Blobucket
+dotnet add package Blobucket.Formatters.Json
 ```
 
 ### Configuration
 
-The library requires at a minimum a connection string to an Azure storage account. The Azure Storage Emulator is sufficient to get started, use `"UseDevelopmentServer=true;"` as the connection string. Below is more information on what else can be configured.
+The library requires at a minimum a connection string to an Azure storage account and to choose a [formatter](#formatter). The Azure Storage Emulator is sufficient to get started, use `"UseDevelopmentServer=true;"` as the connection string. Below is more information on what else can be configured.
 
-#### BlobEntityContainerFactory
+### Factory vs Context
 
-The `BlobEntityContainerFactory` respresents access to the Azure storage account. The factory can be configured using the `BlobEntityContainerFactoryOptions` class via the constructor or the `AddBlobEntityContainerFactory` depenedency injection extension method.
+There are two ways to use the library, the [`BlobEntityContainerFactory`](#BlobEntityContainerFactory) or the [`BlobEntityContext`](#BlobEntityContext) depending on how much control is needed. Factory is the core of the library. Context wraps the factory classes functionality with methods that do what the library is intended to do, read and write POCO blobs.
 
-Configure the `ConnectionString` property; if this is not explicitly set the application will fail to connect to an Azure storage account.
+The factory can provide a richer dependency injection experience with a per entity container object. The context can be used for quick solutions.
+
+*See the [Blobucketeer](samples/Blobucketeer/) sample project for the three ways the library was designed to be used.*
+
+### BlobEntityContainerFactory
+
+The `IBlobEntityContainerFactory` respresents access to the Azure storage account and is used for getting references to `IBlobEntityContainer` class. The factory can be instantiated with `BlobEntityContainerFactory` or by adding it to `IServiceCollection` with `AddBlobEntityContainerFactory` and then using the interface on your dependency injection.
 
 ```csharp
-options.ConnectionString = "UseDevelopmentServer=true;";
+var factory = new BlobEntityContainerFactory("UseDevelopmentServer=true;", new JsonBlobEntityFormatter());
+...
+services.AddBlobEntityContainerFactory("UseDevelopmentServer=true;", new JsonBlobEntityFormatter());
 ```
 
 #### BlobEntityContainer
 
-The `BlobEntityContainer<T>` class represents a container within the Azure storage account where all files accessed are of type `T`. The container can be configured using the `BlobEntityContainerOptionsBuilder<T>` class via the constructor or the `AddBlobEntityContainer<T>` dependency injection extension method.
+The `IBlobEntityContainer<T>` represents the storage account container where all files accessed are of type `T`, though this doesn't mean you can only use one type per container, just that a type is targeted to a single container and you could have multiple types written to a single container. The factory is responsible for returning references to all containers, use the `GetContainerFor<T>` factory method or use the `IServiceCollection` extension method `AddBlobEntityContianer<T>` for dependency injection.
+
+```csharp
+var container = factory.GetContainerFor<Person>();
+...
+services.AddBlobEntityContainer<Person>();
+```
 
 ##### Container Name
 
 The default container name uses the type name of `T`, e.g. if `T` is `OrderDetails` then the container name would be `order-details`. If the type name does not meet the container naming convention for Azure storage accounts or if you want to use a custom container name, use the `UseContainerName` method during configuration.
 
 ```csharp
-builder.UseContainerName("my-container-name");
+factory.GetContainerFor<Person>(builder => builder.UseContainerName("my-container-name"));
+...
+services.AddBlobEntityContainer<Person>(builder => builder.UseContainerName("my-container-name"));
 ```
 
 ##### Formatter
 
-The default formatter is the `JsonBlobEntityFormatter` that uses the `System.Text.Json` package to serialize the objects to JSON. The formatter can be configured at the factory, container, and entity, each inheriting from the previous.
-
-To change the formatter for the factory use the `Formatter` property on the `BlobEntityContainerFactoryOptions` class.
-```csharp
-options.Formatter = new CsvBlobEntityFormatter();
-```
-
-To change the formatter for the container use the `UseFormatter` method on the `BlobEntityContainerOptionsBuilder<T>` class.
+The container formatter is inherited from the factory and can be changed during instantiation with the `UseFormatter` method.
 
 ```csharp
-builder.UseFormatter(new CsvBlobEntityFormatter());
+factory.GetContainerFor<Person>(builder => builder.UseFormatter(new CsvBlobEntityFormatter()));
+...
+services.AddBlobEntityContainer<Person>(builder => builder.UseFormatter(new CsvBlobEntityFormatter()));
 ```
 
-The formatter can also be different per entity using the `BlobEntityOptions` on the `GetAsync` and `SetAsync` methods of the `BlobEntityContainer<T>` class.
-
-*Make sure if the entity was created with a different formatter than the container uses that it is read with a compatible formatter.*
+The formatter can also be different per entity when requested from the container.
 
 ```csharp
-var options = new BlobEntityOptions { Formatter = new CsvBlobEntityFormatter() };
-await container.SetAsync("id", myObject, options);
-await container.GetAsync("id", options);
+var entity = container.GetBlobEntity("id", builder => builder.UseFormatter(new CsvBlobEntityFormatter()));
 ```
 
-### Example
+#### BlobEntity
 
-Fire up the Azure Storage Emulator and create a new console project, replace the `Program.cs` file with below.
+The `IBlobEntity<T>` represents a single blob. All actions for the blob are contained in this type.
 
->A more advanced, end-to-end, sample can be found in the [Sample](Sample) folder.
+
+#### Factory Example
 
 ```csharp
 using System;
@@ -82,26 +91,70 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var factory = new BlobEntityContainerFactory(
-                        new BlobEntityContainerFactoryOptions 
-                        {
-                            ConnectionString = @"UseDevelopmentStorage=true;" 
-                        });
+        var factory = new BlobEntityContainerFactory("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter());
 
         var people = await factory.CreateContainerForAsync<Person>(config => config.UseContainerName("people"));
 
-        await people.SetAsync("outlook.com/smokedlinq", new Person
+        var me = people.GetBlobEntity("outlook.com/smokedlinq");
+
+        await me.SetAsync(new Person
                     {
                         FirstName = "Adam",
                         LastName = "Weigert",
                         EmailAddress = "smokedlinq@outlook.com"
                     });
 
-        var me = await people.GetAsync("outlook.com/smokedlinq");
+        var me = await me.GetAsync();
 
         await Console.Out.WriteLineAsync($"{me.FirstName} {me.LastName}<{me.EmailAddress}>");
 
-        await people.DeleteAsync("outlook.com/smokedlinq");
+        await me.DeleteAsync();
+    }
+}
+
+public class Person
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string EmailAddress { get; set; } = string.Empty;
+}
+```
+
+---
+
+### BlobEntityContext
+
+The `IBlobEntityContext` represents all actions that can be taken against blobs. The need for a factory, containers, and blob objects are handled by the class and it provides a simple fluent way to configure the containers and entities.
+
+#### Context Example
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Blobucket.Context;
+
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        var context = new BlobEntityContext("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter(), builder => builder
+                        .ConfigureContainerFor<Person>()
+                            .UseContainerName("people")
+                            .WhenEntity(id => id.StartsWith("gmail.com/", StringComparison.CurrentCulture))
+                                .UseFormatter(new CsvBlobEntityFormatter()));
+
+        await context.SetAsync("outlook.com/smokedlinq", new Person
+                    {
+                        FirstName = "Adam",
+                        LastName = "Weigert",
+                        EmailAddress = "smokedlinq@outlook.com"
+                    });
+
+        var me = await context.GetAsync<Person>("outlook.com/smokedlinq");
+
+        await Console.Out.WriteLineAsync($"{me.FirstName} {me.LastName}<{me.EmailAddress}>");
+
+        await context.DeleteAsync<Person>("outlook.com/smokedlinq");
     }
 }
 
@@ -117,11 +170,13 @@ public class Person
 
 ## Dependency Injection
 
-The `BlobEntityContainerFactory` and `BlobEntityContainer<T>` classes can be registered with the Microsoft `IServiceCollection` during startup and used like any other registered type.
+The `IBlobEntityContainerFactory`, `IBlobEntityContainer<T>`, and `IBlobEntityContext` classes can be registered with the Microsoft `IServiceCollection` during startup and used like any other registered type.
 
 ```csharp
-services.AddBlobEntityContainerFactory(c => c.ConnectionString = "UseDevelopmentStorage=true;")
+services.AddBlobEntityContainerFactory("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter())
         .AddBlobEntityContainer<Person>(c => c.UseContainerName("people"));
+...
+services.AddBlobEntityContext("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter());
 ```
 
 ---
@@ -133,3 +188,8 @@ To create a custom formatter, inherit from the `BlobEntityFormatter` class and i
 The formatter should be thread-safe as it is created as a singleton during the factory and container operations, thus it should be stateless.
 
 The `metadata` parameter on the methods allows during serialization to set the metadata on the blob. This allows for advanced scenarios where a piece of metadata could be used to use logic to determine which formatter to call based on metadata stored with the blob.
+
+Current list of out of the box formatters:
+
+- Blobucket.Formatters.Json
+- Blobucket.Formatters.Csv (experimental)

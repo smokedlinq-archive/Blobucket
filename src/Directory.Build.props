@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BUILD_VERSION)' == ''">
+    <BUILD_VERSION>0.0.0</BUILD_VERSION>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DebugType>full</DebugType>
+    <VersionPrefix>$(BUILD_VERSION)</VersionPrefix>
+    <FileVersion>$(BUILD_VERSION)</FileVersion>
+    <AssemblyVersion>$(BUILD_VERSION)</AssemblyVersion>
+    <Authors>https://github.com/smokedlinq/Blobucket</Authors>
+    <Company>https://github.com/smokedlinq/Blobucket</Company>
+    <Description>Blobucket makes working with Azure storage blobs as .NET objects easier for simple scenarios.</Description>
+    <PackageProjectUrl>https://github.com/smokedlinq/Blobucket</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/smokedlinq/Blobucket.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
+</Project>

@@ -7,8 +7,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  BUILD_VERSION: 0.0.3
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  BUILD_VERSION: '0.1.0'
 
 steps:
 - task: NuGetToolInstaller@1
