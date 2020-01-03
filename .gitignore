@@ -1,7 +1,4 @@
 ### Coverlet ###
-coverage.json
-coverage.cobertura.xml
-coverage.info
 lcov.info
 
 # Created by https://www.gitignore.io/api/dotnetcore,visualstudio,visualstudiocode,openframeworks+visualstudio
