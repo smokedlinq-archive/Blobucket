@@ -6,6 +6,7 @@ using Azure.Storage.Blobs.Models;
 namespace Blobucket
 {
     public interface IBlobEntity<T>
+        where T : class
     {
         Task<T> GetAsync(CancellationToken cancellationToken = default);
         Task SetAsync(T entity, bool overwrite = true, CancellationToken cancellationToken = default);

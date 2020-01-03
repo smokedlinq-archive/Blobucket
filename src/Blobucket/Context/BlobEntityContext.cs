@@ -28,30 +28,35 @@ namespace Blobucket.Context
         }
 
         public async Task<T> GetAsync<T>(string id, CancellationToken cancellationToken = default)
+            where T : class
         {
             var container = await GetContainerAsync<T>(cancellationToken).ConfigureAwait(false);
             return await container.GetBlobEntity(id, x => _builder.Build<T>(id, x)).GetAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SetAsync<T>(string id, T entity, CancellationToken cancellationToken = default)
+            where T : class
         {
             var container = await GetContainerAsync<T>(cancellationToken).ConfigureAwait(false);
             await container.GetBlobEntity(id, x => _builder.Build<T>(id, x)).SetAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DeleteAsync<T>(string id, DeleteSnapshotsOption snapshotOption = DeleteSnapshotsOption.None, CancellationToken cancellationToken = default)
+            where T : class
         {
             var container = await GetContainerAsync<T>(cancellationToken).ConfigureAwait(false);
             await container.GetBlobEntity(id).DeleteAsync(snapshotsOption: snapshotOption, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CreateSnapshotAsync<T>(string id, IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
+            where T : class
         {
             var container = await GetContainerAsync<T>(cancellationToken).ConfigureAwait(false);
             await container.GetBlobEntity(id).CreateSnapshotAsync(metadata: metadata, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<IBlobEntityContainer<T>> GetContainerAsync<T>(CancellationToken cancellationToken)
+            where T : class
         {
             if (!_containers.TryGetValue(typeof(T), out var container))
             {

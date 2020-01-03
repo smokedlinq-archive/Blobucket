@@ -17,7 +17,7 @@ namespace Blobucket.Formatters
             
             await formatter.Invoking(async x =>
                 {
-                    var stream = await x.SerializeAsync(new Model(), Mock.Of<IDictionary<string, string>>());
+                    var stream = await x.SerializeAsync(new Entity(), Mock.Of<IDictionary<string, string>>());
                     stream.Should().NotBeNull();
                     stream.Length.Should().BeGreaterThan(0);
                 }).Should().NotThrowAsync();
@@ -27,11 +27,11 @@ namespace Blobucket.Formatters
         public async Task CanDeserialize()
         {
             var formatter = new CsvBlobEntityFormatter();
-            var stream = await formatter.SerializeAsync(new Model(), Mock.Of<IDictionary<string, string>>());
+            var stream = await formatter.SerializeAsync(new Entity(), Mock.Of<IDictionary<string, string>>());
 
             await formatter.Invoking(async x =>
                 {
-                    var model = await x.DeserializeAsync<Model>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    var model = await x.DeserializeAsync<Entity>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
                     model.Should().NotBeNull();
                     model.StringProperty.Should().Be("string");
                     model.Int32Property.Should().Be(1);
@@ -42,18 +42,18 @@ namespace Blobucket.Formatters
         public async Task CanManageCsvWithHeader()
         {
             var formatter = new CsvBlobEntityFormatter(hasHeader: true);
-            var stream = await formatter.SerializeAsync(new Model(), Mock.Of<IDictionary<string, string>>());
+            var stream = await formatter.SerializeAsync(new Entity(), Mock.Of<IDictionary<string, string>>());
 
             await formatter.Invoking(async x =>
                 {
-                    var model = await x.DeserializeAsync<Model>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    var model = await x.DeserializeAsync<Entity>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
                     model.Should().NotBeNull();
                     model.StringProperty.Should().Be("string");
                     model.Int32Property.Should().Be(1);
                 }).Should().NotThrowAsync();
         }
 
-        class Model
+        class Entity
         {
             public string StringProperty { get; set; } = "string";
             public int Int32Property { get; set; } = 1;

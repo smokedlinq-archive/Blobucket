@@ -191,5 +191,62 @@ The `metadata` parameter on the methods allows during serialization to set the m
 
 Current list of out of the box formatters:
 
-- Blobucket.Formatters.Json
-- Blobucket.Formatters.Csv (experimental)
+### JsonBlobEntityFormatter 
+
+```batch
+dotnet add package Blobucket.Formatters.Json
+```
+
+The formatter uses the `System.Text.Json` package. 
+
+The `JsonSerializer` can be configured with the constructor `JsonSerializerOptions` parameter.
+
+```csharp
+var formatter = new JsonBlobEntityFormatter(new JsonSerializerOptions
+        {
+            MaxDepth = 50
+        });
+```
+
+### CsvBlobEntityFormatter
+
+```batch
+dotnet add package Blobucket.Formatters.Csv
+```
+
+The formatter uses the [`CsvHelper`](https://github.com/JoshClose/CsvHelper) package.
+
+The encoding (default UTF8), whether a head is read/written (false), reader, and writer configuration can be configured with the constructor parameters.
+
+```csharp
+var formatter = new CsvBlobEntityFormatter(
+        encoding: Encoding.UTF8,
+        hasHeader: true,
+        configureReader: x => x.IgnoreBlankLines = true
+        configureWriter: x => x..TrimOptions = TrimOptions.InsideQuotes);
+```
+
+### BinaryBlobEntityFormatter
+
+The formatter uses the `System.Runtime.Serialization.Formatters.Binary.BinaryFormatter` serializer and requires the entities to be marked with the `SerializableAttribute`.
+
+### TransformBlobEntityFormatter
+
+The formatter allows the entity to be transformed into another type before being read/written. This is helpful when the entity cannot be persisted with the formatter.
+
+```csharp
+var formatter = new TransformBlobEntityFormatter(
+        new JsonBlobEntityFormatter(),
+        convertTo: entity => entity.ToString(),
+        convertFrom: value => new Entity(value));
+```
+
+### MetadataBlobEntityFormatter
+
+The formatter allows injecting metadata when the entity is serialized.
+
+```csharp
+var formatter = new MetadataBlobEntityFormatter(
+        new JsonBlobEntityFormatter(),
+        metadata => metadata["Last-Modified"] = DateTimeOffset.ToString());
+```

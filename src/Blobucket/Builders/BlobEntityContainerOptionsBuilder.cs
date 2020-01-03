@@ -4,7 +4,7 @@ using Blobucket.Formatters;
 
 namespace Blobucket.Builders
 {
-    internal class BlobEntityContainerOptionsBuilder : BlobEntityOptionsBuilder<BlobEntityContainerOptions>, IBlobEntityContainerOptionsBuilder
+    internal class BlobEntityContainerOptionsBuilder : ObjectBuilder<BlobEntityContainerOptions>, IBlobEntityContainerOptionsBuilder
     {
         public IBlobEntityContainerOptionsBuilder UseContainerName<T>()
         {

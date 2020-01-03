@@ -5,6 +5,7 @@ namespace Blobucket
 {
     public interface IBlobEntityContainerFactory
     {
-        IBlobEntityContainer<T> GetContainerFor<T>(Action<IBlobEntityContainerOptionsBuilder>? configure = null);
+        IBlobEntityContainer<T> GetContainerFor<T>(Action<IBlobEntityContainerOptionsBuilder>? configure = null)
+            where T : class;
     }
 }

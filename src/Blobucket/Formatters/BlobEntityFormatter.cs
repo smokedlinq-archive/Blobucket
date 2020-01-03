@@ -7,7 +7,9 @@ namespace Blobucket.Formatters
 {
     public abstract partial class BlobEntityFormatter
     {        
-        public abstract Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default);
-        public abstract Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default);
+        public abstract Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class;
+        public abstract Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class;
     }
 }

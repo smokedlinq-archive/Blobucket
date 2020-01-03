@@ -9,6 +9,7 @@ namespace Blobucket
     public static class BlobEntityContainerFactoryExtensions
     {
         public static Task<IBlobEntityContainer<T>> CreateContainerForAsync<T>(this IBlobEntityContainerFactory factory, Action<IBlobEntityContainerOptionsBuilder>? configure = null, PublicAccessType publicAccessType = PublicAccessType.None, CancellationToken cancellationToken = default)
+            where T : class
         {
             if (factory is null)
             {
@@ -19,6 +20,7 @@ namespace Blobucket
         }
 
         private static async Task<IBlobEntityContainer<T>> CreateContainerForInternalAsync<T>(this IBlobEntityContainerFactory factory, Action<IBlobEntityContainerOptionsBuilder>? configure, PublicAccessType publicAccessType, CancellationToken cancellationToken)
+            where T : class
         {
             var container = factory.GetContainerFor<T>(configure);
             await container.CreateIfNotExistsAsync(publicAccessType: publicAccessType, cancellationToken: cancellationToken).ConfigureAwait(false);

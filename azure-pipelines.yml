@@ -8,7 +8,7 @@ pool:
 
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
-  BUILD_VERSION: '0.1.0'
+  BUILD_VERSION: '0.1.1'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -37,7 +37,6 @@ steps:
 
 - task: NuGetCommand@2
   displayName: NuGet Push
-  #condition: eq(variables['Build.SourceBranchName'], 'master')
   inputs:
     command: push
     packagesToPush: '**/*.nupkg;!**/*.symbols.nupkg'

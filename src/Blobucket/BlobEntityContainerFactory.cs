@@ -27,6 +27,7 @@ namespace Blobucket
         }
 
         public IBlobEntityContainer<T> GetContainerFor<T>(Action<IBlobEntityContainerOptionsBuilder>? configure = null)
+            where T : class
         {
             var builder = new BlobEntityContainerOptionsBuilder();
 

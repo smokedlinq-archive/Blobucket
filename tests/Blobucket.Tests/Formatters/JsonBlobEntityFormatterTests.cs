@@ -41,7 +41,7 @@ namespace Blobucket.Formatters
         {
             var formatter = new JsonBlobEntityFormatter();
             var stream = await formatter.SerializeAsync("data", Mock.Of<IDictionary<string, string>>());
-            await formatter.Invoking(async x => await x.DeserializeAsync<int>(stream, Mock.Of<IReadOnlyDictionary<string, string>>())).Should().ThrowAsync<BlobEntityFormatterException>();
+            await formatter.Invoking(async x => await x.DeserializeAsync<IEnumerable<int>>(stream, Mock.Of<IReadOnlyDictionary<string, string>>())).Should().ThrowAsync<BlobEntityFormatterException>();
         }
 
         [Fact]

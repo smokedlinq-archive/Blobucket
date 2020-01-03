@@ -12,6 +12,7 @@ using Blobucket.Formatters;
 namespace Blobucket
 {
     public sealed class BlobEntity<T> : IBlobEntity<T>
+        where T : class
     {
         private readonly BlobClient _client;
         private readonly BlobEntityFormatter _formatter;

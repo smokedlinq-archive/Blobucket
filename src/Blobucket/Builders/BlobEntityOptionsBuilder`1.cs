@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Blobucket.Builders
 {
-    internal abstract class BlobEntityOptionsBuilder<T>
-        where T : IBlobEntityOptions, new()
+    internal abstract class ObjectBuilder<T>
+        where T : new()
     {
         private readonly List<Action<T>> _delegates = new List<Action<T>>();
 
