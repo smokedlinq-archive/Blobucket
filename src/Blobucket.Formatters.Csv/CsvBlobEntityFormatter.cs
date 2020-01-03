@@ -13,12 +13,14 @@ namespace Blobucket.Formatters
     {
         public static readonly Encoding DefaultEncoding = Encoding.UTF8;
         private readonly Encoding _encoding;
+        private readonly bool _hasHeader;
         private readonly Action<IReaderConfiguration>? _configureReader;
         private readonly Action<IWriterConfiguration>? _configureWriter;
 
-        public CsvBlobEntityFormatter(Encoding? encoding = null, Action<IReaderConfiguration>? configureReader = null, Action<IWriterConfiguration>? configureWriter = null)
+        public CsvBlobEntityFormatter(Encoding? encoding = null, bool hasHeader = false, Action<IReaderConfiguration>? configureReader = null, Action<IWriterConfiguration>? configureWriter = null)
         {
             _encoding = encoding ?? DefaultEncoding;
+            _hasHeader = hasHeader;
             _configureReader = configureReader;
             _configureWriter = configureWriter;
         }
@@ -32,14 +34,18 @@ namespace Blobucket.Formatters
                 {
                     _configureReader?.Invoke(csv.Configuration);
 
-                    if (await csv.ReadAsync().ConfigureAwait(false))
+                    if (_hasHeader && await csv.ReadAsync().ConfigureAwait(false))
                     {
                         csv.ReadHeader();
+                    }
+                    else if (!_hasHeader)
+                    {
+                        csv.Configuration.HasHeaderRecord = false;
+                    }
 
-                        if (await csv.ReadAsync().ConfigureAwait(false))
-                        {
-                            return csv.GetRecord<T>();
-                        }
+                    if (await csv.ReadAsync().ConfigureAwait(false))
+                    {
+                        return csv.GetRecord<T>();
                     }
                 }
 
@@ -64,9 +70,12 @@ namespace Blobucket.Formatters
                 {
                     _configureWriter?.Invoke(csv.Configuration);
 
-                    csv.WriteHeader<T>();
-                    await csv.NextRecordAsync().ConfigureAwait(false);
-                    
+                    if (_hasHeader)
+                    {
+                        csv.WriteHeader<T>();
+                        await csv.NextRecordAsync().ConfigureAwait(false);
+                    }
+
                     csv.WriteRecord(entity);
                     await csv.NextRecordAsync().ConfigureAwait(false);
                 }

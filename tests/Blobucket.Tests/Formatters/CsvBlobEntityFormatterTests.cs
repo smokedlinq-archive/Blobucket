@@ -38,6 +38,21 @@ namespace Blobucket.Formatters
                 }).Should().NotThrowAsync();
         }
 
+        [Fact]
+        public async Task CanManageCsvWithHeader()
+        {
+            var formatter = new CsvBlobEntityFormatter(hasHeader: true);
+            var stream = await formatter.SerializeAsync(new Model(), Mock.Of<IDictionary<string, string>>());
+
+            await formatter.Invoking(async x =>
+                {
+                    var model = await x.DeserializeAsync<Model>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    model.Should().NotBeNull();
+                    model.StringProperty.Should().Be("string");
+                    model.Int32Property.Should().Be(1);
+                }).Should().NotThrowAsync();
+        }
+
         class Model
         {
             public string StringProperty { get; set; } = "string";
