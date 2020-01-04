@@ -36,11 +36,11 @@ steps:
   displayName: Unit Tests
   inputs:
     command: test
-    arguments: -c Release --no-build
+    arguments: '-c Release --no-build /p:CollectCoverage=true'
 
 - pwsh: |
     Get-ChildItem -Path *.nupkg -Recurse -Exclude *.symbols.nupkg | ForEach-Object {
-      Write-Host "##[command]dotnet nuget push '$($_.FullName)' --source https://api.nuget.org/v3/index.json --api-key *** -verbosity Detailed --skip-duplicate
-      dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key $(nuget.org-blobucket) -verbosity Detailed --skip-duplicate
+      Write-Host "##[command]dotnet nuget push '$($_.FullName)' --source https://api.nuget.org/v3/index.json --api-key *** --skip-duplicate"
+      dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key $(nuget.org-blobucket) --skip-duplicate
     }
   displayName: NuGet Push
