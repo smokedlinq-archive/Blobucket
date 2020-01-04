@@ -40,7 +40,7 @@ steps:
 
 - pwsh: |
     Get-ChildItem -Path *.nupkg -Recurse -Exclude *.symbols.nupkg | ForEach-Object {
-      Write-Host "##[command]nuget.exe push '$($_.FullName)' -NonInteractive -Source https://api.nuget.org/v3/index.json -ApiKey *** -Verbosity Detailed -SkipDuplicate"
-      nuget.exe push $_.FullName -NonInteractive -Source https://api.nuget.org/v3/index.json -ApiKey $(nuget.org-blobucket) -Verbosity Detailed -SkipDuplicate
+      Write-Host "##[command]dotnet nuget push '$($_.FullName)' --source https://api.nuget.org/v3/index.json --api-key *** -verbosity Detailed --skip-duplicate
+      dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key $(nuget.org-blobucket) -verbosity Detailed --skip-duplicate
     }
   displayName: NuGet Push
