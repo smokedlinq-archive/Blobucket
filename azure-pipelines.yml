@@ -7,8 +7,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
-  BUILD_VERSION: '0.1.1'
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: 'true'
+  - name: BUILD_VERSION
+    value: '0.1.1'
+  - group: NuGet.org
 
 steps:
 - task: NuGetToolInstaller@1
@@ -35,12 +38,9 @@ steps:
     command: test
     arguments: -c Release --no-build
 
-- task: NuGetCommand@2
+- pwsh: |
+    Get-ChildItem -Path *.nupkg -Recurse -Exclude *.symbols.nupkg | ForEach-Object {
+      Write-Host "##[command]nuget.exe push '$($_.FullName)' -NonInteractive -Source https://api.nuget.org/v3/index.json -ApiKey *** -Verbosity Detailed -SkipDuplicate"
+      nuget.exe push $_.FullName -NonInteractive -Source https://api.nuget.org/v3/index.json -ApiKey $(nuget.org-blobucket) -Verbosity Detailed -SkipDuplicate
+    }
   displayName: NuGet Push
-  continueOnError: true
-  inputs:
-    command: push
-    packagesToPush: '**/*.nupkg;!**/*.symbols.nupkg'
-    nuGetFeedType: external
-    publishFeedCredentials: 'nuget.org_blobucket'
-    allowPackageConflicts: true
