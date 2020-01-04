@@ -36,7 +36,13 @@ steps:
   displayName: Unit Tests
   inputs:
     command: test
-    arguments: '-c Release --no-build /p:CollectCoverage=true'
+    arguments: '-c Release --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
+
+- task: PublishCodeCoverageResults@1
+  displayName: Publish Code Coverage
+  inputs:
+    summaryFileLocation: '**/coverage.cobertura.xml'
+    codeCoverageTool: cobertura
 
 - pwsh: |
     Get-ChildItem -Path *.nupkg -Recurse -Exclude *.symbols.nupkg | ForEach-Object {
