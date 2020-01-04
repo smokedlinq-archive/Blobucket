@@ -37,6 +37,7 @@ steps:
 
 - task: NuGetCommand@2
   displayName: NuGet Push
+  continueOnError: true
   inputs:
     command: push
     packagesToPush: '**/*.nupkg;!**/*.symbols.nupkg'
