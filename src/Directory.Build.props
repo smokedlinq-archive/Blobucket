@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BUILD_VERSION)' != ''">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>Portable</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <VersionPrefix>$(BUILD_VERSION)</VersionPrefix>
