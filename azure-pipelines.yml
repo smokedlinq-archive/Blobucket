@@ -36,7 +36,8 @@ steps:
     version: 3.1.x
 
 - pwsh: |
-    param($Major=$env:VERSION_MAJOR,$Minor=$env:VERSION_MINOR)
+    $Major=$env:VERSION_MAJOR
+    $Minor=$env:VERSION_MINOR
     $Package = Find-Package -Name Blobucket -Source 'https://api.nuget.org/v3/index.json' -MinimumVersion "$($Major).$($Minor)" -MaximumVersion "$($Major).$($Minor).$([ushort]::MaxValue)" -ErrorAction SilentlyContinue
     if ($Package) {
       $Patch = [SemVer]::new($Package.Version).Patch + 1
