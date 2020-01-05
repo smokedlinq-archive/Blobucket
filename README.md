@@ -19,7 +19,7 @@ dotnet add package Blobucket.Formatters.Json
 
 ### Configuration
 
-The library requires at a minimum a connection string to an Azure storage account and to choose a [formatter](#formatter). The Azure Storage Emulator is sufficient to get started, use `"UseDevelopmentServer=true;"` as the connection string. Below is more information on what else can be configured.
+The library requires at a minimum a connection string to an Azure storage account and to choose a [formatter](#formatter). The Azure Storage Emulator is sufficient to get started, use `"UseDevelopmentStorage=true;"` as the connection string. Below is more information on what else can be configured.
 
 ### Factory vs Context
 
@@ -34,9 +34,9 @@ The factory can provide a richer dependency injection experience with a per enti
 The `IBlobEntityContainerFactory` respresents access to the Azure storage account and is used for getting references to `IBlobEntityContainer` class. The factory can be instantiated with `BlobEntityContainerFactory` or by adding it to `IServiceCollection` with `AddBlobEntityContainerFactory` and then using the interface on your dependency injection.
 
 ```csharp
-var factory = new BlobEntityContainerFactory("UseDevelopmentServer=true;", new JsonBlobEntityFormatter());
+var factory = new BlobEntityContainerFactory("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter());
 ...
-services.AddBlobEntityContainerFactory("UseDevelopmentServer=true;", new JsonBlobEntityFormatter());
+services.AddBlobEntityContainerFactory("UseDevelopmentStorage=true;", new JsonBlobEntityFormatter());
 ```
 
 #### BlobEntityContainer
@@ -214,9 +214,11 @@ var formatter = new JsonBlobEntityFormatter(new JsonSerializerOptions
 dotnet add package Blobucket.Formatters.Csv
 ```
 
-The formatter uses the [`CsvHelper`](https://github.com/JoshClose/CsvHelper) package.
+The formatter uses the [`CsvHelper`](https://github.com/JoshClose/CsvHelper) package. Support was added for deserializing enumerable types: `IEnumerable<T>`, `IList<T>`, and `T[]`.
 
 The encoding (default UTF8), whether a head is read/written (false), reader, and writer configuration can be configured with the constructor parameters.
+
+*See the [Blobucketeer/UseCsvFormatter.cs](samples/Blobucketeer/UseCsvFormatter.cs) file for more examples of its usage with enumerable types.*
 
 ```csharp
 var formatter = new CsvBlobEntityFormatter(

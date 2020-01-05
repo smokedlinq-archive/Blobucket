@@ -20,6 +20,9 @@ namespace Blobucketeer
 
             await Console.Out.WriteLineAsync("\nUseCustomContext:\n----------------------------------------").ConfigureAwait(false);
             await UseCustomContext(config).ConfigureAwait(false);
+
+            await Console.Out.WriteLineAsync("\nUseCsvFormatter:\n----------------------------------------").ConfigureAwait(false);
+            await UseCsvFormatter(config).ConfigureAwait(false);
         }
     }
 

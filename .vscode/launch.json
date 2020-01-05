@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Sample/bin/Debug/netcoreapp3.1/Blobucketeer.dll",
+            "program": "${workspaceFolder}/samples/Blobucketeer/bin/Debug/netcoreapp3.1/Blobucketeer.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Sample",
+            "cwd": "${workspaceFolder}/samples/Blobucketeer",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

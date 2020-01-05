@@ -14,7 +14,17 @@ namespace Blobucket.Formatters
         public JsonBlobEntityFormatter(JsonSerializerOptions? options = default)
             => _options = options;
 
-        public override async Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        public override Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            return DeserializeAsyncInternal<T>(stream, cancellationToken);
+        }
+
+        public async Task<T> DeserializeAsyncInternal<T>(Stream stream, CancellationToken cancellationToken)
         {
             try
             {
@@ -30,7 +40,17 @@ namespace Blobucket.Formatters
             }
         }
 
-        public override async Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        public override Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            if (entity is null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
+            return SerializeAsyncInternal<T>(entity, cancellationToken);
+        }
+
+        public async Task<Stream> SerializeAsyncInternal<T>(T entity, CancellationToken cancellationToken)
         {
             try
             {

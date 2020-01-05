@@ -1,7 +1,15 @@
 name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
-- master
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - 'docs/*'
+    - '*.md'
+    - '*.yml'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -9,8 +17,10 @@ pool:
 variables:
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
     value: 'true'
-  - name: BUILD_VERSION
-    value: '0.1.1'
+  - name: VERSION_MAJOR
+    value: '0'
+  - name: VERSION_MINOR
+    value: '1'
   - group: NuGet.org
 
 steps:
@@ -24,6 +34,19 @@ steps:
   inputs:
     packageType: sdk
     version: 3.1.x
+
+- pwsh: |
+    param($Major=$env:VERSION_MAJOR,$Minor=$env:VERSION_MINOR)
+    $Package = Find-Package -Name Blobucket -Source 'https://api.nuget.org/v3/index.json' -MinimumVersion "$($Major).$($Minor)" -MaximumVersion "$($Major).$($Minor).$([ushort]::MaxValue)" -ErrorAction SilentlyContinue
+    if ($Package) {
+      $Patch = [SemVer]::new($Package.Version).Patch + 1
+    } else {
+      $Patch = 0
+    }
+    $Version = "$($Major).$($Minor).$($Patch)"
+    Write-Host "Version: $Version"
+    Write-Host "##vso[task.setvariable variable=BUILD_VERSION;]$Version"
+  displayName: Version
 
 - task: DotNetCoreCLI@2
   displayName: Build

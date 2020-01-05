@@ -3,13 +3,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BUILD_VERSION)' == ''">
-    <BUILD_VERSION>0.0.0</BUILD_VERSION>
-  </PropertyGroup>
-
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(BUILD_VERSION)' != ''">
+    <DebugType>Portable</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <DebugType>full</DebugType>
     <VersionPrefix>$(BUILD_VERSION)</VersionPrefix>
     <FileVersion>$(BUILD_VERSION)</FileVersion>
     <AssemblyVersion>$(BUILD_VERSION)</AssemblyVersion>
