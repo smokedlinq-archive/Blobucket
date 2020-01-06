@@ -15,7 +15,7 @@ variables:
   - name: VERSION_MAJOR
     value: '0'
   - name: VERSION_MINOR
-    value: '1'
+    value: '2'
   - group: NuGet.org
 
 steps:

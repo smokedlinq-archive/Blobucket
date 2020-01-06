@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,16 +13,24 @@ namespace Blobucket.Formatters
     {
         public static readonly Encoding DefaultEncoding = Encoding.UTF8;
         private readonly Encoding _encoding;
-        private readonly bool _hasHeader;
         private readonly Action<IReaderConfiguration>? _configureReader;
         private readonly Action<IWriterConfiguration>? _configureWriter;
 
         public CsvBlobEntityFormatter(Encoding? encoding = null, bool hasHeader = false, Action<IReaderConfiguration>? configureReader = null, Action<IWriterConfiguration>? configureWriter = null)
         {
             _encoding = encoding ?? DefaultEncoding;
-            _hasHeader = hasHeader;
-            _configureReader = configureReader;
-            _configureWriter = configureWriter;
+
+            _configureReader = x => 
+            {
+                x.HasHeaderRecord = hasHeader;
+                configureReader?.Invoke(x);
+            };
+
+            _configureWriter = x =>
+            {
+                x.HasHeaderRecord = hasHeader;
+                configureWriter?.Invoke(x);
+            };
         }
 
         public override Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
@@ -38,12 +42,11 @@ namespace Blobucket.Formatters
 
             return DeserializeAsyncInternal<T>(stream);
         }
-
         
         private static string NoRecordFoundMessage => "The blob does not contain a record.";
-        private static string EnumerableTypeNotSupportedMessage => "Could not convert the records to type '{0}'; supported types are: IEnumerable<>, IList<>, or an array.";
 
-        public async Task<T> DeserializeAsyncInternal<T>(Stream stream)
+        private async Task<T> DeserializeAsyncInternal<T>(Stream stream)
+            where T : class
         {
             try
             {
@@ -52,46 +55,21 @@ namespace Blobucket.Formatters
                 {
                     _configureReader?.Invoke(csv.Configuration);
 
-                    if (_hasHeader && await csv.ReadAsync().ConfigureAwait(false))
+                    var serializer = CsvSerializerFactory.CreateFor<T>(csv);
+
+                    if (csv.Configuration.HasHeaderRecord && await csv.ReadAsync().ConfigureAwait(false))
                     {
                         csv.ReadHeader();
                     }
-                    else if (!_hasHeader)
+
+                    var record = await serializer.GetRecordAsync().ConfigureAwait(false);
+
+                    if (record is null)
                     {
-                        csv.Configuration.HasHeaderRecord = false;
+                        throw new BlobEntityFormatterException(NoRecordFoundMessage);
                     }
 
-                    if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
-                    {
-                        var elementType = typeof(T).GetElementType() ?? typeof(T).GetGenericArguments().FirstOrDefault();
-
-                        if (elementType != null)
-                        {
-                            var enumerableType = typeof(IEnumerable<>).MakeGenericType(elementType);
-                            var records = GetRecords(csv, elementType, enumerableType);
-                                                        
-                            if (enumerableType == typeof(T) || typeof(T).IsArray)
-                            {
-                                return AsEnumerableType<T>(enumerableType, elementType, "ToArray", records);
-                            }
-
-                            var listType = typeof(IList<>).MakeGenericType(elementType);
-
-                            if (listType == typeof(T))
-                            {
-                                return AsEnumerableType<T>(enumerableType, elementType, "ToList", records);
-                            }
-                        }
-
-                        throw new BlobEntityFormatterException(string.Format(CultureInfo.CurrentCulture, EnumerableTypeNotSupportedMessage, typeof(T).Name));
-                    }
-                    else
-                    {
-                        if (await csv.ReadAsync().ConfigureAwait(false))
-                        {
-                            return csv.GetRecord<T>();
-                        }
-                    }
+                    return record;
                 }
             }
             catch (BlobEntityFormatterException)
@@ -102,23 +80,6 @@ namespace Blobucket.Formatters
             {
                 throw new BlobEntityFormatterException(ex.Message, ex);
             }
-
-            throw new BlobEntityFormatterException(NoRecordFoundMessage);
-        }
-
-        private static object GetRecords(CsvReader reader, Type type, Type enumerable)
-        {
-            var call = Expression.Call(Expression.Constant(reader), reader.GetType().GetMethod("GetRecords", 1, Array.Empty<Type>()).MakeGenericMethod(type));
-            var getRecords = typeof(Func<>).MakeGenericType(enumerable);
-            return Expression.Lambda(getRecords, call).Compile().DynamicInvoke();
-        }
-
-        private static T AsEnumerableType<T>(Type enumerable, Type element, string methodName, object records)
-        {
-            var source = Expression.Parameter(enumerable, "source");
-            var call = Expression.Call(typeof(Enumerable), methodName, new[] { element }, source);
-            var toArray = typeof(Func<,>).MakeGenericType(enumerable, typeof(T));
-            return (T)Expression.Lambda(toArray, call, source).Compile().DynamicInvoke(records);
         }
 
         public override Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
@@ -143,37 +104,15 @@ namespace Blobucket.Formatters
                 {
                     _configureWriter?.Invoke(csv.Configuration);
 
-                    if (_hasHeader)
+                    var serializer = CsvSerializerFactory.CreateFor<T>(csv);
+
+                    if (csv.Configuration.HasHeaderRecord)
                     {
-                        if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
-                        {
-                            var elementType = typeof(T).GetElementType() ?? typeof(T).GetGenericArguments().FirstOrDefault();
-
-                            if (elementType == null)
-                            {
-                                throw new BlobEntityFormatterException(string.Format(CultureInfo.CurrentCulture, EnumerableTypeNotSupportedMessage, typeof(T).Name));
-                            }
-
-                            csv.WriteHeader(elementType);
-                        }
-                        else
-                        {
-                            csv.WriteHeader<T>();
-                        }
-
+                        serializer.WriteHeader(entity);
                         await csv.NextRecordAsync().ConfigureAwait(false);
                     }
                     
-                    if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
-                    {
-                        csv.WriteRecords((IEnumerable)entity);
-                    }
-                    else
-                    {
-                        csv.WriteRecord(entity);
-                    }
-
-                    await csv.NextRecordAsync().ConfigureAwait(false);
+                    await serializer.WriteRecordAsync(entity).ConfigureAwait(false);
                 }
 
                 stream.Position = 0;

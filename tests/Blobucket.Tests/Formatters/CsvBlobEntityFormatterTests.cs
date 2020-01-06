@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace Blobucket.Formatters
         }
 
         [Fact]
-        public async Task SupportsIEnumerableT()
+        public async Task SupportsIEnumerable()
         {
             var formatter = new CsvBlobEntityFormatter(hasHeader: true);
             Stream stream = Stream.Null;
@@ -93,7 +94,7 @@ namespace Blobucket.Formatters
         }
 
         [Fact]
-        public async Task SupportsIListT()
+        public async Task SupportsIList()
         {
             var formatter = new CsvBlobEntityFormatter(hasHeader: true);
             Stream stream = Stream.Null;
@@ -112,6 +113,55 @@ namespace Blobucket.Formatters
         }
 
         [Fact]
+        public async Task SupportsIDictionary()
+        {
+            var formatter = new CsvBlobEntityFormatter(hasHeader: true);
+            Stream stream = Stream.Null;
+            
+            await formatter.Invoking(async x => 
+                {
+                    stream = await x.SerializeAsync(new Dictionary<string, object> 
+                                    { 
+                                        { "hello", "world" }, 
+                                        { "goodbye", "world" } 
+                                    }, Mock.Of<IDictionary<string, string>>());
+                }).Should().NotThrowAsync();
+
+            await formatter.Invoking(async x =>
+                {
+                    var entities = await x.DeserializeAsync<IDictionary<string, object>>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    entities.Should().NotBeNull();
+                    entities.Count.Should().Be(2);
+                    entities.ContainsKey("hello").Should().BeTrue();
+                    entities.ContainsKey("goodbye").Should().BeTrue();
+                }).Should().NotThrowAsync();
+        }
+
+        [Fact]
+        public async Task SupportsDynamic()
+        {
+            var formatter = new CsvBlobEntityFormatter(hasHeader: true);
+            Stream stream = Stream.Null;
+            var now = DateTimeOffset.Now;
+            
+            await formatter.Invoking(async x => 
+                {
+                    dynamic obj = new ExpandoObject();
+                    obj.hello = "world";
+                    obj.now = now;
+                    stream = await x.SerializeAsync(obj, Mock.Of<IDictionary<string, string>>());
+                }).Should().NotThrowAsync();
+
+            await formatter.Invoking(async x =>
+                {
+                    var obj = await x.DeserializeAsync<dynamic>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    ((object)obj).Should().NotBeNull();
+                    ((string)obj.hello).Should().Be("world");
+                    DateTimeOffset.Parse((string)obj.now).Should().BeSameDateAs(now);
+                }).Should().NotThrowAsync();
+        }
+
+        [Fact]
         public async Task DeserializeUnsupportedEnumerableTypeThrowsBlobEntityFormatterException()
         {
             var formatter = new CsvBlobEntityFormatter(hasHeader: true);
@@ -119,7 +169,7 @@ namespace Blobucket.Formatters
 
             await formatter.Invoking(async x =>
                 {
-                    var entities = await x.DeserializeAsync<IDictionary<string, string>>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
+                    var entities = await x.DeserializeAsync<HashSet<Entity>>(stream, Mock.Of<IReadOnlyDictionary<string, string>>());
                 }).Should().ThrowAsync<BlobEntityFormatterException>();
         }
 
