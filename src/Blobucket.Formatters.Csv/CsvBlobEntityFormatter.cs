@@ -55,7 +55,7 @@ namespace Blobucket.Formatters
                 {
                     _configureReader?.Invoke(csv.Configuration);
 
-                    var serializer = CsvSerializerFactory.CreateFor<T>(csv);
+                    var serializer = CsvReaderFactory<T>.Create(csv);
 
                     if (csv.Configuration.HasHeaderRecord && await csv.ReadAsync().ConfigureAwait(false))
                     {
@@ -104,7 +104,7 @@ namespace Blobucket.Formatters
                 {
                     _configureWriter?.Invoke(csv.Configuration);
 
-                    var serializer = CsvSerializerFactory.CreateFor<T>(csv);
+                    var serializer = CsvWriterFactory<T>.Create(csv);
 
                     if (csv.Configuration.HasHeaderRecord)
                     {
