@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Blobucket.Builders
 {
-    internal abstract class ObjectBuilder<T>
+    internal abstract class OptionsBuilder<T>
         where T : new()
     {
         private readonly List<Action<T>> _delegates = new List<Action<T>>();

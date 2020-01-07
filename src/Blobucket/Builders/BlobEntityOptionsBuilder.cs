@@ -3,7 +3,7 @@ using Blobucket.Formatters;
 
 namespace Blobucket.Builders
 {
-    internal class BlobEntityOptionsBuilder : ObjectBuilder<BlobEntityOptions>, IBlobEntityOptionsBuilder
+    internal class BlobEntityOptionsBuilder : OptionsBuilder<BlobEntityOptions>, IBlobEntityOptionsBuilder
     {
         public IBlobEntityOptionsBuilder UseFormatter<T>(T formatter) where T : BlobEntityFormatter
         {
