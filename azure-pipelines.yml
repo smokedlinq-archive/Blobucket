@@ -66,6 +66,8 @@ steps:
 - pwsh: |
     Get-ChildItem -Path *.nupkg -Recurse -Exclude *.symbols.nupkg | ForEach-Object {
       Write-Host "##[command]dotnet nuget push '$($_.FullName)' --source https://api.nuget.org/v3/index.json --api-key *** --skip-duplicate"
-      dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key $(nuget.org-blobucket) --skip-duplicate
+      dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key $env:nugetApiKey --skip-duplicate
     }
   displayName: NuGet Push
+  env:
+    nugetApiKey: $(nuget.org-blobucket)
