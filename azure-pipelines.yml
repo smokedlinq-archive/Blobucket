@@ -71,3 +71,4 @@ steps:
   displayName: NuGet Push
   env:
     nugetApiKey: $(nuget.org-blobucket)
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
