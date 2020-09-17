@@ -8,7 +8,11 @@ namespace Blobucket.Formatters.Enumerable
         protected static EnumerableType Type { get; private set; } = new EnumerableType(typeof(T));
         private static readonly EnumerableConverter __converter = new EnumerableConverter(Type);
 
-        protected T Convert(object obj)
+        protected EnumerableBase()
+        {
+        }
+
+        protected static T Convert(object obj)
             => (T)__converter.Convert(obj);
     }
 }

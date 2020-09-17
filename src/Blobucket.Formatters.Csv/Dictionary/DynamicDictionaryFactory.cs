@@ -11,14 +11,13 @@ namespace Blobucket.Formatters.Dictionary
 
         public DynamicDictionaryFactory(DictionaryType type)
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (type.Dictionary is null || type.Key is null || type.Value is null || !type.Dictionary.IsAssignableFrom(type.Type))
             {
+                #pragma warning disable S3626
                 _delegate = new Func<object, object>(_ => throw new NotSupportedException());
+                #pragma warning restore S3626
             }
             else
             {

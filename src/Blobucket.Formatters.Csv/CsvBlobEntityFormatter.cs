@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -12,13 +13,20 @@ namespace Blobucket.Formatters
     public sealed class CsvBlobEntityFormatter : BlobEntityFormatter
     {
         public static readonly Encoding DefaultEncoding = Encoding.UTF8;
+        public static readonly CultureInfo DefaultCulture = CultureInfo.CurrentCulture;
+        private const int DefaultBufferSize = 4096;
+
         private readonly Encoding _encoding;
+        private readonly CultureInfo _culture;
+        private readonly int _bufferSize;
         private readonly Action<IReaderConfiguration>? _configureReader;
         private readonly Action<IWriterConfiguration>? _configureWriter;
 
-        public CsvBlobEntityFormatter(Encoding? encoding = null, bool hasHeader = false, Action<IReaderConfiguration>? configureReader = null, Action<IWriterConfiguration>? configureWriter = null)
+        public CsvBlobEntityFormatter(Encoding? encoding = null, CultureInfo? culture = null, bool hasHeader = false, int bufferSize = DefaultBufferSize, Action<IReaderConfiguration>? configureReader = null, Action<IWriterConfiguration>? configureWriter = null)
         {
             _encoding = encoding ?? DefaultEncoding;
+            _culture = culture ?? DefaultCulture;
+            _bufferSize = bufferSize;
 
             _configureReader = x => 
             {
@@ -34,12 +42,9 @@ namespace Blobucket.Formatters
         }
 
         public override Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {   
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
+            _ = stream ?? throw new ArgumentNullException(nameof(stream));
             return DeserializeAsyncInternal<T>(stream);
         }
         
@@ -50,8 +55,8 @@ namespace Blobucket.Formatters
         {
             try
             {
-                using (var reader = new StreamReader(stream, _encoding, true, 1024, true))
-                using (var csv = new CsvReader(reader, true))
+                using (var reader = new StreamReader(stream, _encoding, true, _bufferSize, true))
+                using (var csv = new CsvReader(reader, _culture, true))
                 {
                     _configureReader?.Invoke(csv.Configuration);
 
@@ -83,12 +88,9 @@ namespace Blobucket.Formatters
         }
 
         public override Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {
-            if (entity is null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
             return SerializeAsyncInternal<T>(entity);
         }
 
@@ -99,8 +101,8 @@ namespace Blobucket.Formatters
             {
                 var stream = new MemoryStream();
 
-                using (var writer = new StreamWriter(stream, _encoding, 1024, true))
-                using (var csv = new CsvWriter(writer, true))
+                using (var writer = new StreamWriter(stream, _encoding, _bufferSize, true))
+                using (var csv = new CsvWriter(writer, _culture, true))
                 {
                     _configureWriter?.Invoke(csv.Configuration);
 

@@ -16,11 +16,7 @@ namespace Blobucket
 
         public BlobEntityContainer(BlobContainerClient client, BlobEntityContainerOptions options)
         {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
+            _ = options ?? throw new ArgumentNullException(nameof(options));
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _formatter = options.Formatter;
         }

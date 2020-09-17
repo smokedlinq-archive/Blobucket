@@ -12,18 +12,9 @@ namespace Blobucket
 
         public BlobEntityContainerFactory(string connectionString, BlobEntityFormatter formatter)
         {
-            if (connectionString is null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (formatter is null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
-
+            _ = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
             _serviceClient = new BlobServiceClient(connectionString);
-            _formatter = formatter;
         }
 
         public IBlobEntityContainer<T> GetContainerFor<T>(Action<IBlobEntityContainerOptionsBuilder>? configure = null)

@@ -13,11 +13,7 @@ namespace Blobucket.Formatters
 
         public MetadataBlobEntityFormatter(BlobEntityFormatter formatter, IDictionary<string, string> metadata)
         {
-            if (metadata is null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-
+            _ = metadata ?? throw new ArgumentNullException(nameof(metadata));
             _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
             _callback = (_, m) => 
             {
@@ -30,11 +26,7 @@ namespace Blobucket.Formatters
 
         public MetadataBlobEntityFormatter(BlobEntityFormatter formatter, Action<IDictionary<string, string>> callback)
         {
-            if (callback is null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
+            _ = callback ?? throw new ArgumentNullException(nameof(callback));
             _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
             _callback = (_, metadata) => callback(metadata);
         }

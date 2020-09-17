@@ -9,14 +9,13 @@ namespace Blobucket.Formatters.Enumerable
 
         public EnumerableConverter(EnumerableType type)
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (type.Element is null || type.Enumerable is null || type.List is null)
             {
+                #pragma warning disable S3626
                 _delegate = new Func<object, object>(_ => throw new NotSupportedException());
+                #pragma warning restore S3626
             }
             else
             {

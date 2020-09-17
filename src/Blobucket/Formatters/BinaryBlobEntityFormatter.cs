@@ -5,11 +5,14 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
 
+#pragma warning disable S5773
+
 namespace Blobucket.Formatters
 {
     public sealed class BinaryBlobEntityFormatter : BlobEntityFormatter
     {
         public override Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {
             try
             {
@@ -22,6 +25,7 @@ namespace Blobucket.Formatters
         }
 
         public override Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {
             try
             {

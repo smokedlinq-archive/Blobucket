@@ -11,11 +11,7 @@ namespace Blobucket
         public static Task<IBlobEntityContainer<T>> CreateContainerForAsync<T>(this IBlobEntityContainerFactory factory, Action<IBlobEntityContainerOptionsBuilder>? configure = null, PublicAccessType publicAccessType = PublicAccessType.None, CancellationToken cancellationToken = default)
             where T : class
         {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
+            _ = factory ?? throw new ArgumentNullException(nameof(factory));
             return factory.CreateContainerForInternalAsync<T>(configure, publicAccessType, cancellationToken);
         }
 

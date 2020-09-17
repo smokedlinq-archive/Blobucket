@@ -15,12 +15,9 @@ namespace Blobucket.Formatters
             => _options = options;
 
         public override Task<T> DeserializeAsync<T>(Stream stream, IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
+            _ = stream ?? throw new ArgumentNullException(nameof(stream));
             return DeserializeAsyncInternal<T>(stream, cancellationToken);
         }
 
@@ -41,12 +38,9 @@ namespace Blobucket.Formatters
         }
 
         public override Task<Stream> SerializeAsync<T>(T entity, IDictionary<string, string> metadata, CancellationToken cancellationToken = default)
+            where T : class
         {
-            if (entity is null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
+            _ = entity  ?? throw new ArgumentNullException(nameof(entity));
             return SerializeAsyncInternal<T>(entity, cancellationToken);
         }
 

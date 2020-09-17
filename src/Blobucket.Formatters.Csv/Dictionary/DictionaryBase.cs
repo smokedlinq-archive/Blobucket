@@ -7,7 +7,11 @@ namespace Blobucket.Formatters.Dictionary
         protected static DictionaryType Type { get; private set; } = new DictionaryType(typeof(T));
         private static readonly DynamicDictionaryFactory __factory = new DynamicDictionaryFactory(Type);
         
-        protected dynamic ToDynamicObject(object obj)
+        protected DictionaryBase()
+        {
+        }
+
+        protected static dynamic ToDynamicObject(object obj)
             => __factory.ToDynamicObject(obj);
     }
 }
